@@ -6,6 +6,7 @@ import cups
 import requests
 import qrcode
 from flask import Flask, url_for, redirect
+from werkzeug.contrib.fixers import ProxyFix
 from fpdf import FPDF
 
 CUPS = cups.Connection()
@@ -13,6 +14,8 @@ PRINTER_NAME = 'ticketprinter'
 REST_PASS = 'caacb78109b3f0b3dbaeadfb0fc647f41756bb65ef3f4aec2d7117b650078692'
 
 app = Flask(__name__)
+app.wsgi_app = ProxyFix(app.wsgi_app)
+
 #app.debug = True
 
 @app.route("/")
