@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8"/>
+    <title>FOI Q</title>
+
+    <style type="text/css">
+      body {
+        padding: 20% 0;
+        margin: 0 auto;
+        font-family: sans-serif;
+        font-size: 20px;
+        text-align: center;
+        overflow: hidden;
+      }
+
+      .q {
+        background: #eeeeee; /* Old browsers */
+        background: -moz-linear-gradient(top, #eeeeee 0%, #cccccc 100%); /* FF3.6+ */
+        background: -webkit-gradient(linear, left top, left bottom, color-stop(0%,#eeeeee), color-stop(100%,#cccccc)); /* Chrome,Safari4+ */
+        background: -webkit-linear-gradient(top, #eeeeee 0%,#cccccc 100%); /* Chrome10+,Safari5.1+ */
+        background: -o-linear-gradient(top, #eeeeee 0%,#cccccc 100%); /* Opera 11.10+ */
+        background: -ms-linear-gradient(top, #eeeeee 0%,#cccccc 100%); /* IE10+ */
+        background: linear-gradient(to bottom, #eeeeee 0%,#cccccc 100%); /* W3C */
+        filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#eeeeee', endColorstr='#cccccc',GradientType=0 ); /* IE6-9 */
+        border-radius: 4px;
+        padding: 20px 10px 10px 10px;
+        font-size: 2em;
+        color: #000;
+        text-decoration: none;
+        display: inline-block;
+        margin: 0 20px;
+        min-width: 150px;
+        border: 1px solid #ccc;
+        box-shadow: 0 1px 5px #ccc;
+        text-shadow: 0 1px 0 #fff;
+      }
+
+      .q span {
+        display: block;
+        font-weight: bold;
+        font-size: 2em;
+      }
+
+      .q small {
+        font-size: 0.5em;
+        opacity: 0.7;
+      }
+  
+      .q small.current {
+        display: block;
+        font-size: 0.3em;
+        opacity: 0.5;
+      }
+
+      .q.status_STOPPED { display: none; }
+
+    </style>
+
+    <script src="http://ajax.googleapis.com/ajax/libs/jquery/2.0.2/jquery.min.js"></script>
+    <script type="text/javascript">
+      function refreshQueues() {
+        $.getJSON('/status', function (data) {
+          var n = data.length;
+
+          var qs = $('#queues').detach().empty();
+          while(n--) {
+            var q = data[n];
+            if(q.name == "TEST") continue;
+
+            qs.append("<a href='#" + q.id + "' class='q status_" + q.status + "'><small class='current'>Trenutni broj</small><span>" +  (q.activeTicket || 0) + "</span><small>" + q.description + "</small></a>");
+          }
+          $(document.body).append(qs);
+        });
+      }
+
+      function requestTicket(q) {
+        $.getJSON('/request/' + q, function (resp) {
+          console.log("REQUESTED", resp);
+          refreshQueues();
+        });
+      }
+
+      $(function () {
+        refreshQueues();
+
+        $(document.body).on('click', '.q', function () {
+          requestTicket(this.href.split('#')[1]);
+        });
+      })
+    </script>
+  </head>
+  <body>
+    <div id="queues"></div>
+  </body>
+</html>
