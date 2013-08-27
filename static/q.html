@@ -34,6 +34,9 @@
         border: 1px solid #ccc;
         box-shadow: 0 1px 5px #ccc;
         text-shadow: 0 1px 0 #fff;
+        -webkit-backface-visibility: hidden;
+	-moz-backface-visibility: hidden;
+	-webkit-transition: translate3d(0,0,0)
       }
 
       .q span {
@@ -53,44 +56,26 @@
         opacity: 0.5;
       }
 
-      .q.status_STOPPED { display: none; }
+      .q.status_STOPPED, .q.status_PAUSED { opacity: 0.5 }
 
+      #loading { 
+	position: fixed;
+	width: 100%;
+	height: 100%;
+	background: #fff;
+	text-align: center;
+	z-index: 5;
+	padding: 30px 0;
+	margin-top: -40px;
+      }
     </style>
 
     <script src="http://ajax.googleapis.com/ajax/libs/jquery/2.0.2/jquery.min.js"></script>
-    <script type="text/javascript">
-      function refreshQueues() {
-        $.getJSON('/status', function (data) {
-          var n = data.length;
-
-          var qs = $('#queues').detach().empty();
-          while(n--) {
-            var q = data[n];
-            if(q.name == "TEST") continue;
-
-            qs.append("<a href='#" + q.id + "' class='q status_" + q.status + "'><small class='current'>Trenutni broj</small><span>" +  (q.activeTicket || 0) + "</span><small>" + q.description + "</small></a>");
-          }
-          $(document.body).append(qs);
-        });
-      }
-
-      function requestTicket(q) {
-        $.getJSON('/request/' + q, function (resp) {
-          console.log("REQUESTED", resp);
-          refreshQueues();
-        });
-      }
-
-      $(function () {
-        refreshQueues();
-
-        $(document.body).on('click', '.q', function () {
-          requestTicket(this.href.split('#')[1]);
-        });
-      })
-    </script>
+    <script src="jquery.transit.min.js"></script>
+    <script src="app.js"></script>
   </head>
   <body>
+    <div id="loading" style="display:none"><img src="loading.gif" /></div>
     <div id="queues"></div>
   </body>
 </html>

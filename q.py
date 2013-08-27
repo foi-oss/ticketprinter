@@ -11,12 +11,12 @@ from fpdf import FPDF
 
 CUPS = cups.Connection()
 PRINTER_NAME = 'ticketprinter'
-REST_PASS = 'caacb78109b3f0b3dbaeadfb0fc647f41756bb65ef3f4aec2d7117b650078692'
+REST_PASS = 'XXX'
 
 app = Flask(__name__)
 app.wsgi_app = ProxyFix(app.wsgi_app)
 
-#app.debug = True
+app.debug = True 
 
 @app.route("/")
 def index():
@@ -25,17 +25,18 @@ def index():
 @app.route("/status")
 def status():
   r = requests.get('http://q.foi.hr/rest/info')
+  print r.text
   return r.text
 
 @app.route("/request/<int:queue_id>")
 def request(queue_id):
-  #r = requests.get('http://q.foi.hr/restSecure/requestTicket/' + str(queue_id), auth=('rest', REST_PASS))
-  #data = r.json
-  data = {'id': 5, 'newTicketValue': '3', 'description': 'Dummy red', 'waitingCustomers': 2, 'newTicketTime': '2012-09-06T12:56:42Z+0100'}
+  r = requests.get('http://q.foi.hr/restSecure/requestTicket/' + str(queue_id), auth=('rest', REST_PASS))
+  data = r.json()
 
-  print_file('Ticket ' + str(data['newTicketValue']), data)
+  if 'newTicketValue' in data:
+    print_file('Ticket ' + data['newTicketValue'], data)
 
-  return '{"ok":1}'
+  return r.text 
 
 def print_file(title, data):
   (f, fname) = tempfile.mkstemp(text=True)
@@ -48,11 +49,11 @@ def print_file(title, data):
   pdf.ln()
 
   pdf.set_font('Arial', 'B', 128)
-  pdf.cell(0, 10, str(data['newTicketValue']), 0, 1, 'C')
+  pdf.cell(0, 10, data['newTicketValue'], 0, 1, 'C')
 
   pdf.set_font('Arial', '', 18)
   pdf.ln()
-  pdf.cell(0, 10, data['description'], 0, 1, 'C')
+  pdf.cell(0, 10, data['description'].encode('cp1252', 'ignore'), 0, 1, 'C')
 
   qr = qrcode.QRCode(box_size=3)
   link = 'http://q.foi.hr/view?id=' + str(data['id'])
@@ -76,5 +77,5 @@ def print_file(title, data):
   os.unlink(qfname)
 
 if __name__ == "__main__":
-  app.run()
+  app.run(port=8000)
 
